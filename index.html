@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cat Clicker</title>
+    <link href="dist/main.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <main>
+        <header class="controls">
+            <div>
+                <input id="js-name-input" name="name" type="text" placeholder="Write Your Cats Name!">
+                <button id="js-make-cat-button" type="button">New Cat!</button>
+            </div>
+            <ul class="cat-list"></ul>
+        </header>
+        <section class="cat-container" id="js-cat-container">
+            <h2></h2>
+            <figure>
+                <img src="" alt="An adorable clickable cat." title="" class="hidden">
+                <figcaption></figcaption>
+            </figure>
+        </section>
+        <section class="admin">
+            <button id="js-admin-button" class="hidden">Cat Settings</button>
+            <form id="js-admin-form" class="hidden">
+                <label for="cat-name">Cat Name:</label>
+                <input type="text" name="cat-name" id="cat-name">
+                <label for="cat-url">Cat Picture URL:</label>
+                <input type="text" name="cat-url" id="cat-url">
+                <label for="cat-clicks">Clicks:</label>
+                <input name="cat-clicks" id="cat-clicks" type="number">
+                <div class="buttons">
+                    <button type="reset" id="js-admin-reset">Cancel</button>
+                    <button type="submit">Save Changes</button>
+                </div>
+            </form>
+        </section>
+    </main>
+<script src="dist/app.js" type="application/x-javascript"></script>
+</body>
+</html>

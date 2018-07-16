@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans')
+$font-stack: "Open Sans", Helvetica, sans-serif
+
+body, html
+  box-sizing: border-box
+  font-family: $font-stack
+
+body
+  text-align: center
+
+main
+  display: flex
+  flex-wrap: wrap
+  max-width: 900px
+  margin: 0 auto
+
+  input, button
+    padding: 8px
+    font-family: $font-stack
+  input
+    width: 60%
+
+header.controls
+  width: 100%
+  margin: 5% auto
+
+  ul.cat-list
+    margin: 16px auto 0 auto
+    list-style-type: none
+    padding-left: 0
+
+section.cat-container
+  width: 50%
+  margin: 0 auto 5% auto
+
+  h2
+    font-family: "Open Sans", Helvetica, sans-serif
+
+section.admin
+  width: 45%
+  margin: 0 2.5%
+
+  form.hidden
+    display: none
+  form
+    width: 100%
+    display: flex
+    flex-wrap: wrap
+    margin: 2.5% auto 0 auto
+
+
+    label, input
+      width: 100%
+      //margin-right: 2.5%
+    label
+      text-align: left
+    div.buttons
+      margin: 16px 0 0 auto
+      //float: right
+
+
+
+.hidden
+  display: none
