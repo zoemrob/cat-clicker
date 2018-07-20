@@ -1,0 +1,19 @@
+{
+  "name": "cat-clicker",
+  "version": "1.0.0",
+  "description": "Cat-Clicker Premium Pro!",
+  "main": "clicker.js",
+  "scripts": {
+    "start": "gulp"
+  },
+  "author": "Zoe Robertson",
+  "license": "ISC",
+  "dependencies": {
+    "browser-sync": "^2.24.5",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^5.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-sass": "^4.0.1",
+    "gulp-uglify-es": "^1.0.4"
+  }
+}

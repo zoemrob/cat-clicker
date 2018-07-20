@@ -43,7 +43,7 @@ const load = () => {
         renderAdminFields: function () {
             const cat = CatController.getCurrentCat();
             this.catName.value = cat.name;
-            this.catUrl.value = cat.picUrl;
+            this.catUrl.value = cat.img.src;
             this.catClicks.value = cat.clicks;
         },
 
@@ -83,6 +83,13 @@ const load = () => {
                 if (this.input.value === '') { e.stopPropagation(); }
                 else {
                     const cat = CatController.makeCat(this.input.value);
+
+                    if (cat.error) {
+                        e.stopPropagation();
+                        console.log(cat.error);
+                        return;
+                    }
+
                     const li = document.createElement('li'),
                         a = document.createElement('a');
                     a.href = `javascript:console.log('${cat.name}')`;
@@ -117,21 +124,27 @@ const load = () => {
 
         init: function () {
             this.title = document.querySelector('section#js-cat-container h2');
-            this.img = document.querySelector('section#js-cat-container figure img');
+            this.wrapper = document.querySelector('div#js-pic-wrapper');
             this.caption = document.querySelector('section#js-cat-container figure figcaption');
         },
 
         render: function (cat) {
             const id = cat.id;
+            const prevImg = this.wrapper.firstElementChild;
+
+            if (prevImg !== null) {
+                this.wrapper.removeChild(prevImg);
+            }
 
             this.title.innerText = cat.name;
-            this.img.setAttribute('id', id + '-pic');
-            this.img.src = cat.picUrl;
-            this.img.onclick = () => {
+            cat.img.setAttribute('id', id + '-pic');
+            //cat.img.src = cat.picUrl;
+            this.wrapper.appendChild(cat.img);
+            this.wrapper.onclick = () => {
                 CatController.incCounter();
             };
-            if (this.img.classList.contains('hidden')) {
-                this.img.classList.toggle('hidden');
+            if (this.wrapper.classList.contains('hidden')) {
+                this.wrapper.classList.toggle('hidden');
             }
             if (cat.clicks > 0) {
                 this.caption.innerText = `You've clicked ${cat.name} ` + (cat.clicks === 1 ? '1 time!': cat.clicks.toString() + ' times!');
@@ -160,8 +173,12 @@ const load = () => {
         },
 
         updateCat: function (cat) {
-            this.cats[cat.id] = cat;
-            this.setCurrentCat(cat);
+            const updatedCat = this.getCurrentCat();
+            updatedCat.img.src = cat.picUrl;
+            updatedCat.clicks = cat.clicks;
+            updatedCat.name = cat.name;
+            this.cats[cat.id] = updatedCat;
+            this.setCurrentCat(updatedCat);
         }
     };
 
@@ -169,11 +186,12 @@ const load = () => {
         list: document.querySelector('ul.cat-list'),
 
         init: function () {
+            ImageFactory.init();
             ListView.init();
             CatView.init();
 
             setTimeout(() => {
-                simType(0, 'Timothy', '#js-name-input', function () {
+                simType('Timothy', '#js-name-input', function () {
                     document.querySelector('#js-make-cat-button').click();
                     document.querySelector('#js-name-input').value = '';
                 });
@@ -193,7 +211,12 @@ const load = () => {
                 AdminView.hide();
             }
 
-            const cat = new Cat(name, CatsModel.cats.length);
+            const img = ImageFactory.getImg();
+            if (img.error) {
+                console.log(img.error);
+                return img;
+            }
+            const cat = new Cat(name, CatsModel.cats.length, img);
             CatsModel.cats.push(cat);
             CatsModel.setCurrentCat(cat);
             CatView.render(cat);
@@ -226,51 +249,130 @@ const load = () => {
             if (AdminView.isVisible()) {
                 AdminView.hide();
             }
-        }
+        },
+
 
     };
 
+    /**
+     * Factory to prefetch and provide img elements from thecatapi.com
+     * Improves image render times.
+     *
+     * @property availableImgs {array<HTMLElement>}: Prefetched img elements
+     * @property availableImgUrls {array<String>}: Available img elements
+     */
+    const ImageFactory = {
+        availableImgs: [],
+        availableImgUrls: [
+            'http://thecatapi.com/api/images/get?image_id=a2&format=src&type=png&size=small',
+            'http://thecatapi.com/api/images/get?image_id=a3&format=src&type=png&size=small',
+            'http://thecatapi.com/api/images/get?image_id=a4&format=src&type=png&size=small',
+            'http://thecatapi.com/api/images/get?image_id=a5&format=src&type=png&size=small',
+            'http://thecatapi.com/api/images/get?image_id=a6&format=src&type=png&size=small',
+            'http://thecatapi.com/api/images/get?image_id=a7&format=src&type=png&size=small',
+            'http://thecatapi.com/api/images/get?format=src&type=png&size=small'
+        ],
+
+        // load two images to start
+        init: function () {
+            this.createImgTag();
+            this.createImgTag();
+        },
+
+        checkAvailableImgs: function () {
+            return this.availableImgs.length;
+        },
+
+        /* for future use
+        addAvailableImages: function (images) {
+            this.availableImgs.concat(images);
+        },
+        */
+
+        addAvailableImage: function (image) {
+            this.availableImgs.push(image);
+        },
+
+        getImg: function () {
+            if (this.checkAvailableImgs() > 0 && this.checkAvailableImgUrls() > 1) {
+                this.createImgTag();
+                return this.availableImgs.shift()
+            } else if (this.checkAvailableImgs() > 0) {
+                return this.availableImgs.shift();
+            } else {
+                    if (this.checkAvailableImgUrls() > 0) {
+                        this.createImgTag();
+                        return this.availableImgs.shift();
+                    } else {
+                        return {error: 'There are no images available!'};
+                    }
+                }
+            },
+
+        checkAvailableImgUrls: function () {
+            return this.availableImgUrls.length;
+        },
+
+        /* for future use
+        getAvailableUrls: function () {
+            return this.availableImgUrls;
+        },
+        */
+
+        getSingleAvailableUrl: function () {
+            return this.availableImgUrls.shift();
+        },
+
+        /* for future use
+        refillImgUrls: function (urls) {
+            this.availableImgUrls.concat(urls);
+        },
+        */
+
+        createImgTag: function () {
+            const img = document.createElement('img');
+            img.src = this.getSingleAvailableUrl();
+            this.addAvailableImage(img);
+        }
+    };
+
     CatController.init();
-};
 
-/**
- * Allows typing simulation on input field.
- *
- * @param i {Number} should be called initially with 0
- * @param str {String} string to be typed in input field
- * @param inputSelector {String} css selector for querySelector
- * @param callback {Function} OPTIONAL - a callback to fire after
- *      final character is typed;
- */
-function simType(i, str, inputSelector, callback) {
-    const stringArr = str.split(''),
-        len = stringArr.length,
-        input = document.querySelector(inputSelector),
-        inputLength = input.value.length;
+    /**
+     * Allows typing simulation on input field.
+     *
+     * @param i {Number} should be called initially with 0
+     * @param str {String} string to be typed in input field
+     * @param inputSelector {String} css selector for querySelector
+     * @param callback {Function} OPTIONAL - a callback to fire after
+     *      final character is typed;
+     */
+    function simType(str, inputSelector, callback, i = 0) {
+        const stringArr = str.split(''),
+            len = stringArr.length,
+            input = document.querySelector(inputSelector),
+            inputLength = input.value.length;
 
-    if (inputLength < len) {
-        input.value += stringArr[i];
-        i++;
-        setTimeout(() => {
-            simType(i, str, inputSelector, callback);
-        }, 150); // variable time between "type"
-    } else {
-        if (typeof callback !== "undefined") {
-            callback();
-        }
-    }
-}
-
-class Cat {
-    constructor(name, id, url) {
-        this.clicks = 0;
-        this.name = name;
-        this.id = id;
-        if (typeof url === "undefined") {
-            this.picUrl = 'http://thecatapi.com/api/images/get?image_id=a' + (this.id + 2) + '&format=src&type=png&size=small';
+        if (inputLength < len) {
+            input.value += stringArr[i];
+            i++;
+            setTimeout(() => {
+                simType(str, inputSelector, callback, i);
+            }, 150); // variable time between "type"
         } else {
-            this.picUrl = url;
+            if (typeof callback === "function") {
+                callback();
+            }
         }
     }
-}
+
+    class Cat {
+        constructor(name, id, img) {
+            this.clicks = 0;
+            this.name = name;
+            this.id = id;
+            this.img = img;
+        }
+    }
+};
 document.addEventListener('DOMContentLoaded', load);
